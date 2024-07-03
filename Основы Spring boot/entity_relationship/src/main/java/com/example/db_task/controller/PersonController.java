@@ -29,30 +29,29 @@ public class PersonController {
     public Optional<Person> findPersonById(@PathVariable int id) {
         return repository.findById(id);
     }
+
     @PostMapping("/person")
     public Person addPerson(@RequestBody Person person) {
         repository.save(person);
         return person;
     }
+
     @PutMapping("/person/{id}")
-    public ResponseEntity<Person> updatePerson(@PathVariable int id, @RequestBody Person person)
-    {
+    public ResponseEntity<Person> updatePerson(@PathVariable int id, @RequestBody Person person) {
         Optional<Person> existingPerson = repository.findById(id);
-        if(existingPerson.isPresent())
-        {
+        if (existingPerson.isPresent()) {
             Person updatedPerson = existingPerson.get();
             updatedPerson.setFirstname(person.getFirstname());
             updatedPerson.setSurname(person.getSurname());
             updatedPerson.setLastname(person.getLastname());
             updatedPerson.setBirthday(person.getBirthday());
             return new ResponseEntity<>(repository.save(updatedPerson), HttpStatus.OK);
-        }
-        else
-        {
+        } else {
             person.setId(id);
             return new ResponseEntity<>(repository.save(person), HttpStatus.CREATED);
         }
     }
+
     @DeleteMapping("/person/{id}")
     public void deletePerson(@PathVariable int id) {
         repository.deleteById(id);
@@ -64,15 +63,22 @@ public class PersonController {
     }
 
     @GetMapping("/person/{id}/message")
-    public List<Message> getMessage(@PathVariable int id)
-    {
-        return repository.findById(id).get().getMessages();
+    public ResponseEntity<?> getMessage(@PathVariable int person_id) {
+        Optional<Person> personOptional = repository.findById(person_id);
+        if (personOptional.isPresent()) {
+            return new ResponseEntity<List<Message>>(personOptional.get().getMessages(), HttpStatus.OK);
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @GetMapping("/person/{p_id}/message/{m_id}")
-    public Message getMessageById(@PathVariable int p_id, @PathVariable int m_id)
+    public ResponseEntity<?> getMessageById(@PathVariable int person_id, @PathVariable int message_id)
     {
-        return repository.findById(p_id).get().getMessage(m_id);
+        Optional<Person> personOptional = repository.findById(person_id);
+        if (personOptional.isPresent()) {
+            return new ResponseEntity<Message>(personOptional.get().getMessage(message_id), HttpStatus.OK);
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/person/{p_id}/message/{m_id}")
@@ -80,15 +86,15 @@ public class PersonController {
         Optional<Person> personOptional = repository.findById(p_id);
         if (personOptional.isPresent()) {
             Person person = personOptional.get();
-            boolean removed = person.getMessages().removeIf(message -> message.getId() == m_id);
-            if (removed) {
-                repository.save(person); // Сохраняем обновленное состояние пользователя
-                return ResponseEntity.noContent().build(); // HTTP 204 No Content
-            } else {
-                return ResponseEntity.notFound().build(); // HTTP 404 Not Found
+            boolean is_removed = person.getMessages().removeIf(message -> message.getId() == m_id);
+            if (is_removed) {
+                repository.save(person);
+                return ResponseEntity.noContent().build();
             }
-        } else {
-            return ResponseEntity.notFound().build(); // HTTP 404 Not Found
+
+            return ResponseEntity.notFound().build();
+
         }
+        return ResponseEntity.notFound().build();
     }
 }
