@@ -1,40 +1,68 @@
 package com.example.location.controller;
 
-import com.example.location.model.Location;
-import com.example.location.repository.LocationRepository;
+import com.example.location.model.Geodata;
+import com.example.location.model.Weather;
+import com.example.location.repository.GeodataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
+
 
 @RestController
 @RequestMapping("/location")
 public class LocationController {
 
     @Autowired
-    private LocationRepository repository;
+    private GeodataRepository repository;
+    private RestTemplate restTemplate;
+
+    @GetMapping("/weather/{name}")
+    public Weather redirectRequestWeather(@PathVariable String name) {
+        Geodata geodata = repository.findByName(name).get();
+        String url = String.format("http://localhost:8082/?lat=%s&lon=%s", geodata.getLat(), geodata.getLon());
+        return restTemplate.getForObject(url, Weather.class);
+    }
+
+    @GetMapping("/{name}")
+    public Optional<Geodata> getLocation(@PathVariable String name) {
+        return repository.findByName(name);
+    }
 
     @GetMapping
-    public Iterable<Location> findAll() {
+    public Iterable<Geodata> getLocations()
+    {
         return repository.findAll();
     }
 
-    @GetMapping("/{id}")
-    public Optional<Location> findById(@PathVariable int id) {
-        return repository.findById(id);
+    @PutMapping("/{name}")
+    public ResponseEntity<Geodata> updateLocation(@PathVariable String name, @RequestBody Geodata geodata)
+    {
+        Optional<Geodata> existingGeodata = repository.findByName(name);
+        if(existingGeodata.isPresent())
+        {
+            Geodata updatedGeodata = existingGeodata.get();
+            updatedGeodata.setName(geodata.getName());
+            updatedGeodata.setLat(geodata.getLat());
+            updatedGeodata.setLon(geodata.getLon());
+            return  new ResponseEntity<>(repository.save(updatedGeodata), HttpStatus.OK);
+        } else {
+            return  new ResponseEntity<>(repository.save(geodata), HttpStatus.OK);
+        }
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteById(@PathVariable int id) {
-        repository.deleteById(id);
+    @DeleteMapping("/{name}")
+    public void deleteGeodata(@PathVariable String name)
+    {
+        repository.deleteById(repository.findByName(name).get().getId());
     }
 
     @PostMapping
-    public ResponseEntity<?> save(@RequestBody Location location) {
-        return repository.findById(location.getId()).isPresent()
-                ? new ResponseEntity(repository.findById(location.getId()), HttpStatus.BAD_REQUEST)
-                : new ResponseEntity(repository.save(location), HttpStatus.CREATED);
+    public Geodata save(@RequestBody Geodata geodata) {
+        return repository.save(geodata);
     }
+
 }
