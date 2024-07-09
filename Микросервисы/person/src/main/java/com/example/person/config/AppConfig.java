@@ -1,23 +1,16 @@
-package com.example.weather.configuration;
+package com.example.person.config;
 
-import com.example.weather.model.Coord;
-import com.example.weather.model.TimeCacheData;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
 @Configuration
 public class AppConfig {
 
     @Bean
     @LoadBalanced
-    public RestTemplate getRestTemplate() {
+    public RestTemplate restTemplate() {
         return new RestTemplate();
-    }
-    @Bean
-    public HashMap<Coord, TimeCacheData> getCache() {
-        return new HashMap<Coord, TimeCacheData>();
     }
 }

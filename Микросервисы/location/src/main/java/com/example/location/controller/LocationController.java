@@ -18,12 +18,14 @@ public class LocationController {
 
     @Autowired
     private GeodataRepository repository;
+
+    @Autowired
     private RestTemplate restTemplate;
 
     @GetMapping("/weather/{name}")
     public Weather redirectRequestWeather(@PathVariable String name) {
         Geodata geodata = repository.findByName(name).get();
-        String url = String.format("http://localhost:8082/?lat=%s&lon=%s", geodata.getLat(), geodata.getLon());
+        String url = String.format("http://localhost:8082/weather?lat=%s&lon=%s", geodata.getLat(), geodata.getLon());
         return restTemplate.getForObject(url, Weather.class);
     }
 
