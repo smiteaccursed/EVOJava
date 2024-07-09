@@ -29,6 +29,9 @@ public class Person {
     public Person(@NonNull String name, @NonNull String surname, @NonNull String lastname, @NonNull LocalDate birthday, @NonNull String location) {
         this.name = name;
         this.location = location;
+        this.surname=surname;
+        this.lastname=lastname;
+        this.birthday=birthday;
     }
 
     public Integer getId() {
@@ -37,5 +40,46 @@ public class Person {
 
     public String getLocation() {
         return location;
+    }
+
+    public void setLocation(String location) {
+        this.location=location;
+    }
+
+    public void setName(String name)
+    {
+        this.name=name;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+    public void setSurname(String surname)
+    {
+        this.surname=surname;
+    }
+
+    public String getSurname()
+    {
+        return surname;
+    }
+
+    public void setLastname(String lastname)
+    {
+        this.lastname=lastname;
+    }
+
+    public String getLastname()
+    {
+        return lastname;
+    }
+
+    public void setBirthday(@NonNull LocalDate birthday) {
+        this.birthday = birthday;
+    }
+
+    public @NonNull LocalDate getBirthday() {
+        return birthday;
     }
 }
